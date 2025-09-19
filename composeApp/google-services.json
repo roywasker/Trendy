@@ -1,0 +1,62 @@
+{
+  "project_info": {
+    "project_number": "151385642901",
+    "project_id": "e-commerce-project-462014",
+    "storage_bucket": "e-commerce-project-462014.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:151385642901:android:d1c3a0a776316097d4889c",
+        "android_client_info": {
+          "package_name": "org.roy.ecommerce_project"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "151385642901-5un2pu6bm0it0if107sjstas1ni8l9hg.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "org.roy.ecommerce_project",
+            "certificate_hash": "c9d6e7dd258e94c3e8c3ccb5dcadf030de7bb501"
+          }
+        },
+        {
+          "client_id": "151385642901-jsl3ckptgas25urbcqput6g310sb4h76.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "org.roy.ecommerce_project",
+            "certificate_hash": "65e9bd26184191d5c06599f480206604d256791a"
+          }
+        },
+        {
+          "client_id": "151385642901-613at8itm99estj1kei9e0a1qo9aff9p.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBmlUOtWdtY-95Mq6O5hkKMKswi1ecr0j0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "151385642901-613at8itm99estj1kei9e0a1qo9aff9p.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "151385642901-0bi70td52bol5s7mlt055va8av8jd2tk.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "org.roy.ecommerce-project.EcommerceProject"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
