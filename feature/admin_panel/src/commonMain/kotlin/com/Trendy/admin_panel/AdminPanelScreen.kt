@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -52,7 +53,7 @@ fun AdminPanelScreen(
     val viewModel = koinViewModel<AdminPanelViewModel>()
     val products = viewModel.filteredProducts.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
-    var searchBarVisible by mutableStateOf(false)
+    var searchBarVisible by remember { mutableStateOf(false) }
 
     Scaffold(
         containerColor = Surface,

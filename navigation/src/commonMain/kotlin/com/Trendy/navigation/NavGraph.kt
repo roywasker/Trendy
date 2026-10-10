@@ -26,14 +26,15 @@ import org.koin.compose.koinInject
 @Composable
 fun SetupNavGraph(startDestination: Screen = Screen.Auth){
     val navController = rememberNavController()
-    val preferencesData by PreferencesRepository.readPayPalDataFlow()
+    val preferencesRepository = koinInject<PreferencesRepository>()
+    val preferencesData by preferencesRepository.readPayPalDataFlow()
         .collectAsState(initial = null)
 
     LaunchedEffect(preferencesData) {
         preferencesData?.let { paymentCompleted ->
-            if(paymentCompleted.token != null) {
+            if(paymentCompleted.token != null || paymentCompleted.error != null || paymentCompleted.isSuccess == false) {
                 navController.navigate(paymentCompleted)
-                PreferencesRepository.reset()
+                preferencesRepository.reset()
             }
         }
     }

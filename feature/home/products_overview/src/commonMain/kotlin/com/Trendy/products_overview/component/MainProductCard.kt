@@ -148,7 +148,7 @@ fun MainProductCard(
                 AnimatedContent(
                     targetState = product.category
                 ) { category ->
-                    if (ProductCategory.valueOf(category) == ProductCategory.DIY) {
+                    if (ProductCategory.fromStoredName(category) == ProductCategory.DIY) {
                         Spacer(modifier = Modifier.weight(1f))
                     } else {
                         Row(

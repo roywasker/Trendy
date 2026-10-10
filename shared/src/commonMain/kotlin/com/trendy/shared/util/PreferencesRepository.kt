@@ -10,25 +10,29 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 
 @OptIn(ExperimentalSettingsApi::class)
-object PreferencesRepository {
-    private val settings: ObservableSettings = Settings().makeObservable()
+class PreferencesRepository(
+    private val settings: ObservableSettings
+) {
+    constructor() : this(Settings().makeObservable())
 
-    private const val IS_SUCCESS = "isSuccess_paypal"
-    private const val ERROR = "error_paypal"
-    private const val TOKEN = "token_paypal"
+    private val IS_SUCCESS = "isSuccess_paypal"
+    private val ERROR = "error_paypal"
+    private val TOKEN = "token_paypal"
 
     fun savePayPalData(
         isSuccess: Boolean?,
         error: String?,
         token: String?,
     ) {
+        reset()
         isSuccess?.let { settings.putBoolean(IS_SUCCESS, it) }
         error?.let { settings.putString(ERROR, it) }
         token?.let { settings.putString(TOKEN, it) }
     }
 
     fun readPayPalDataFlow(): Flow<Screen.PaymentCompleted?> = callbackFlow {
-        fun getCurrentPaymentProcessed(): Screen.PaymentCompleted {
+        fun getCurrentPaymentProcessed(): Screen.PaymentCompleted? {
+            if (!settings.hasKey(IS_SUCCESS) && !settings.hasKey(ERROR) && !settings.hasKey(TOKEN)) return null
             return Screen.PaymentCompleted(
                 isSuccess = settings.getBooleanOrNull(IS_SUCCESS),
                 error = settings.getStringOrNull(ERROR),
@@ -43,6 +47,8 @@ object PreferencesRepository {
     }
 
     fun reset() {
-        settings.clear()
+        settings.remove(IS_SUCCESS)
+        settings.remove(ERROR)
+        settings.remove(TOKEN)
     }
 }

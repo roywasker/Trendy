@@ -11,5 +11,6 @@ data class Order(
     val customerId: String,
     val items: List<CartItem>,
     val totalAmount: Double,
-    val token: String? = null
+    val token: String? = null,
+    val shipping: ShippingDetails? = null
 )

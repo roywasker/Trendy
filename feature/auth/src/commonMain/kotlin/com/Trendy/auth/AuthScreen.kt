@@ -20,7 +20,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.Trendy.auth.component.GoogleButton
-import com.mmk.kmpauth.firebase.google.GoogleButtonUiContainerFirebase
 import com.trendy.shared.Alpha
 import com.trendy.shared.BebasNeueFont
 import com.trendy.shared.FontSize
@@ -86,9 +85,8 @@ fun AuthScreen(
                         color = TextPrimary
                     )
                 }
-                GoogleButtonUiContainerFirebase(
-                    linkAccount = false,
-                    onResult = { result ->
+                LocalGoogleAuthContent.current(
+                    { result ->
                         result.onSuccess { user ->
                             viewModel.createCustomer(
                                 user = user,
@@ -100,9 +98,9 @@ fun AuthScreen(
                                 },
                                 onError = { message ->
                                     messageBarState.addError(message)
+                                    loadingState = false
                                 }
                             )
-                            loadingState = false
                         }
                             .onFailure { error ->
                                 if (error.message?.contains("A network error") == true) {
@@ -115,12 +113,14 @@ fun AuthScreen(
                                 loadingState = false
                             }
                     }
-                ) {
+                ) { startGoogleSignIn ->
                     GoogleButton(
                         loading = loadingState,
                         onClick = {
-                            loadingState = true
-                            this@GoogleButtonUiContainerFirebase.onClick()
+                            if (!loadingState) {
+                                loadingState = true
+                                startGoogleSignIn()
+                            }
                         }
                     )
                 }

@@ -12,6 +12,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
@@ -45,6 +46,7 @@ fun CustomTextField(
 
     TextField(
         modifier = modifier
+            .testTag("field_${placeholder.orEmpty().lowercase().replace(' ', '_')}")
             .fillMaxWidth()
             .border(
                 width = 1.dp,
@@ -53,6 +55,7 @@ fun CustomTextField(
             )
             .clip(RoundedCornerShape(size = 6.dp)),
         enabled = enabled,
+        isError = error,
         value = value,
         onValueChange = onValueChange,
         placeholder = if (placeholder != null) {

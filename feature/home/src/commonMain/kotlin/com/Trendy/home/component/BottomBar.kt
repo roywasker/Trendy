@@ -47,7 +47,7 @@ fun BottomBar(
             Icon(
                 modifier = Modifier.clickable { onSelect(destination) },
                 painter = painterResource(destination.icon),
-                contentDescription = "Bottom Bar destination icon",
+                contentDescription = "Navigate to ${destination.title}",
                 tint = animatedTint
             )
         }

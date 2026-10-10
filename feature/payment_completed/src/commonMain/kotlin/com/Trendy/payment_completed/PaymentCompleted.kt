@@ -61,10 +61,15 @@ fun PaymentCompleted(
                     ) {
                         InfoCard(
                             title = "Oops!",
-                            subTitle = message,
+                            subTitle = if (viewModel.canRetryConfirmation) "$message\nRetry confirmation before paying again." else message,
                             image = Resources.Images.Cat
                         )
                     }
+                    if (viewModel.canRetryConfirmation) PrimaryButton(
+                        text = "Retry confirmation",
+                        icon = Resources.Icons.Checkmark,
+                        onClick = viewModel::retryConfirmation
+                    )
                     PrimaryButton(
                         text = "Go back",
                         icon = Resources.Icons.RightArrow,

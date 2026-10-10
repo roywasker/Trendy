@@ -10,17 +10,17 @@ enum class Country(
 ) {
     Israel(
         dialCode = 972,
-        code = "ISR",
+        code = "IL",
         flag = Resources.Flag.Israel
     ),
     Usa(
         dialCode = 1,
-        code = "USA",
+        code = "US",
         flag = Resources.Flag.Usa
     ),
     India(
         dialCode = 91,
-        code = "In",
+        code = "IN",
         flag = Resources.Flag.India
     ),
     Serbia(

@@ -11,12 +11,12 @@ import androidx.compose.runtime.remember
 import dev.gitlive.firebase.storage.File
 
 @Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
-actual class PhotoPicker {
+actual class PhotoPicker actual constructor() : ImagePicker {
 
     private var openPhotoPicker = mutableStateOf(false)
 
     @Composable
-    actual fun InitializePhotoPicker(onImageSelect: (File?) -> Unit) {
+    actual override fun InitializePhotoPicker(onImageSelect: (File?) -> Unit) {
 
         val openPhotoPickerState by remember { openPhotoPicker }
         val pickMedia = rememberLauncherForActivityResult(
@@ -37,7 +37,7 @@ actual class PhotoPicker {
         }
     }
 
-    actual fun open() {
+    actual override fun open() {
         openPhotoPicker.value = true
     }
 }

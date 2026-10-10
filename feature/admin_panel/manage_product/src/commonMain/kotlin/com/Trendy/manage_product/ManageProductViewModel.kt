@@ -39,6 +39,7 @@ class ManageProductViewModel(
 ): ViewModel() {
 
     private val productId = savedStateHandle.get<String>("id")?: ""
+    private val isEditing = productId.isNotEmpty()
 
     var screenState by mutableStateOf(ManageProductScreenState())
         private set
@@ -46,11 +47,16 @@ class ManageProductViewModel(
     var uploadImageState: RequestState<Unit> by mutableStateOf(RequestState.Idle)
         private set
 
+    var productLoadState: RequestState<Unit> by mutableStateOf(
+        if (isEditing) RequestState.Loading else RequestState.Success(Unit)
+    )
+        private set
+
     val isFormValid: Boolean
-        get() = screenState.title.isNotEmpty() &&
-                screenState.description.isNotEmpty() &&
-                screenState.thumbnail.isNotEmpty() &&
-                screenState.price != 0.0
+        get() = screenState.title.isNotBlank() &&
+                screenState.description.isNotBlank() &&
+                screenState.thumbnail.isNotBlank() &&
+                screenState.price.isFinite() && screenState.price > 0.0
 
 
     init {
@@ -60,13 +66,18 @@ class ManageProductViewModel(
                 if (selectedProduct.isSuccess()) {
 
                     val product = selectedProduct.getSuccessData()
+                    val category = ProductCategory.fromStoredName(product.category)
+                    if (category == null) {
+                        productLoadState = RequestState.Error("Unsupported product category.")
+                        return@launch
+                    }
 
                     updateId(product.id)
                     updateTitle(product.title)
                     updateCreateAt(product.createdAt)
                     updateDescription(product.description)
                     updateThumbnail(product.thumbnail)
-                    updateCategory(ProductCategory.valueOf(product.category))
+                    updateCategory(category)
                     updateWeight(product.weight?: 0)
                     updatePrice(product.price)
                     updateNew(product.isNew)
@@ -76,6 +87,11 @@ class ManageProductViewModel(
                     if (product.thumbnail.isNotEmpty()) {
                         updateThumbnailUploaderState(RequestState.Success(Unit))
                     }
+                    productLoadState = RequestState.Success(Unit)
+                } else if (selectedProduct.isError()) {
+                    productLoadState = RequestState.Error(selectedProduct.getErrorMessage())
+                } else {
+                    productLoadState = RequestState.Error("Product is unavailable.")
                 }
             }
         }
@@ -133,6 +149,10 @@ class ManageProductViewModel(
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ){
+        if (!isFormValid) {
+            onError("Please fill in the information ")
+            return
+        }
         viewModelScope.launch {
             adminRepository.createNewProduct(
                 product = Product(
@@ -203,7 +223,9 @@ class ManageProductViewModel(
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
-        if (isFormValid){
+        if (!isEditing || !productLoadState.isSuccess()) {
+            onError(productLoadState.getErrorMessageOr("Product is unavailable."))
+        } else if (isFormValid){
             viewModelScope.launch {
                 adminRepository.updateProduct(
                     product = Product(
@@ -232,6 +254,10 @@ class ManageProductViewModel(
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ){
+        if (isEditing && !productLoadState.isSuccess()) {
+            onError(productLoadState.getErrorMessageOr("Product is unavailable."))
+            return
+        }
         viewModelScope.launch {
             adminRepository.deleteImageFromStorage(
                 screenState.thumbnail,
@@ -266,6 +292,10 @@ class ManageProductViewModel(
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ){
+        if (isEditing && !productLoadState.isSuccess()) {
+            onError(productLoadState.getErrorMessageOr("Product is unavailable."))
+            return
+        }
         productId.takeIf { it.isNotEmpty() }?.let { id ->
             viewModelScope.launch {
                 adminRepository.deleteProduct(
@@ -284,4 +314,7 @@ class ManageProductViewModel(
             }
         }
     }
+
+    private fun RequestState<Unit>.getErrorMessageOr(default: String): String =
+        if (isError()) getErrorMessage() else default
 }

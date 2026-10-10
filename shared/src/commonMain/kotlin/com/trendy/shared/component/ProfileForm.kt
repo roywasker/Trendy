@@ -40,7 +40,12 @@ fun ProfileForm(
     address: String?,
     onAddressChange: (String) -> Unit,
     phoneNumber: String?,
-    onPhoneNumberChange: (String) -> Unit
+    onPhoneNumberChange: (String) -> Unit,
+    phoneMaximum: Int = 50,
+    postalCodeText: String? = null,
+    onPostalCodeTextChange: ((String) -> Unit)? = null,
+    shippingState: String = "",
+    onShippingStateChange: ((String) -> Unit)? = null,
 ){
     var showCountryPicker by remember { mutableStateOf(false) }
 
@@ -91,20 +96,24 @@ fun ProfileForm(
         )
 
         CustomTextField(
-            value = "${postalCode?: ""}",
-            onValueChange = { onPostalCodeChange(it.toIntOrNull()) },
+            value = postalCodeText ?: "${postalCode?: ""}",
+            onValueChange = { value -> onPostalCodeTextChange?.invoke(value) ?: onPostalCodeChange(value.toIntOrNull()) },
             placeholder = "Postal Code",
-            error = postalCode == null || postalCode.toString().length !in 3..10,
+            error = (postalCodeText ?: postalCode?.toString().orEmpty()).length !in 3..12,
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Number
             )
         )
 
+        if (onShippingStateChange != null && country in listOf(Country.Usa, Country.India)) {
+            CustomTextField(value = shippingState, onValueChange = onShippingStateChange,
+                placeholder = "State / Province", error = !com.trendy.shared.domain.validShippingState(country, shippingState))
+        }
         CustomTextField(
             value = address?: "",
             onValueChange = onAddressChange,
             placeholder = "Address",
-            error = address?.length !in 3..10
+            error = address?.length !in 3..50
         )
 
         Row(
@@ -126,7 +135,7 @@ fun ProfileForm(
                 value = phoneNumber?: "",
                 onValueChange = onPhoneNumberChange,
                 placeholder = "Phone Number",
-                error = phoneNumber == null || phoneNumber.toString().length !in 5..10,
+                error = phoneNumber == null || phoneNumber.length !in 5..phoneMaximum,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Number
                 )

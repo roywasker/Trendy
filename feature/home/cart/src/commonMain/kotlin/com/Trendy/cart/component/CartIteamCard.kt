@@ -124,13 +124,13 @@ fun CartItemCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "$${product.price}",
+                    text = if (product.isAvailable) "$${product.price}" else "Unavailable — remove this item",
                     fontSize = FontSize.EXTRA_REGULAR,
                     color = TextSecondary,
                     fontWeight = FontWeight.Medium,
                     maxLines = 1
                 )
-                QuantityCounter(
+                if (product.isAvailable) QuantityCounter(
                     size = QuantityCounterSize.Small,
                     value = cartItem.quantity,
                     onMinusClick = onMinusClick,

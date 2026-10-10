@@ -15,30 +15,19 @@ struct iOSApp: App {
             ContentView()
                 .ignoresSafeArea()
                 .onOpenURL { url in
-                    print("Received URL in onOpenURL: \(url)")
 
                     if GIDSignIn.sharedInstance.handle(url) { return }
 
                     guard let components = URLComponents(url: url, resolvingAgainstBaseURL: true),
                           let queryItems = components.queryItems else { return }
 
-                    let success = queryItems.first(where: { $0.name == "success" })?.value == "true"
-                    let cancel = queryItems.first(where: { $0.name == "cancel" })?.value == "true"
-                    let token = queryItems.first(where: { $0.name == "token" })?.value
-
-                    print(
-                        """
-                            ✅ Success: \(success)
-                            ✅ Cancel: \(cancel)
-                            ✅ Token: \(token ?? "null")
-                        """
+                    guard url.scheme == "com.example.trendy", url.host == "paypalpay" else { return }
+                    let payment = PayPalCallback.shared.parse(
+                        success: queryItems.first(where: { $0.name == "success" })?.value,
+                        cancel: queryItems.first(where: { $0.name == "cancel" })?.value,
+                        token: queryItems.first(where: { $0.name == "token" })?.value
                     )
-
-                    PreferencesRepository().savePayPalData(
-                        isSuccess: success ? KotlinBoolean(value: true) : nil,
-                        error: cancel ? "Payment canceled." : nil,
-                        token: token
-                    )
+                    PreferencesRepository().savePayPalData(isSuccess: payment.isSuccess, error: payment.error, token: payment.token)
                 }
         }
     }

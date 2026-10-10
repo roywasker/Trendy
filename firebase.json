@@ -1,0 +1,1 @@
+{"functions":[{"source":"functions","codebase":"payments","ignore":["node_modules","test","*.log"]}],"emulators":{"firestore":{"port":8080},"functions":{"port":5001},"ui":{"enabled":false}}}

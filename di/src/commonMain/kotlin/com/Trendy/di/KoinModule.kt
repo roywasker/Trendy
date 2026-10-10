@@ -15,16 +15,18 @@ import com.Trendy.checkout.domain.PaypalApi
 import com.Trendy.data.OrderRepositoryImpl
 import com.trendy.details.DetailsViewModel
 import com.Trendy.data.domain.CustomerRepository
-import com.Trendy.data.domain.CustomerRepositoryImpl
+import com.Trendy.data.CustomerRepositoryImpl
 import com.Trendy.data.domain.ProductRepository
 import com.Trendy.data.ProductRepositoryImpl
 import com.Trendy.data.domain.OrderRepository
 import com.Trendy.payment_completed.PaymentViewModel
 import com.trendy.shared.util.IntentHandler
+import com.trendy.shared.util.PreferencesRepository
 import org.koin.core.KoinApplication
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.viewModelOf
+import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 val sharedModule = module {
@@ -34,6 +36,7 @@ val sharedModule = module {
     single<OrderRepository> { OrderRepositoryImpl(get()) }
     single<PaypalApi> { PaypalApi() }
     single<IntentHandler> { IntentHandler() }
+    single<PreferencesRepository> { PreferencesRepository() }
     viewModelOf(::AuthViewModel)
     viewModelOf(::HomeGraphViewModel)
     viewModelOf(::ProfileViewModel)
@@ -43,7 +46,7 @@ val sharedModule = module {
     viewModelOf(::AdminPanelViewModel)
     viewModelOf(::ProductsOverviewViewModel)
     viewModelOf(::CategorySearchViewModel)
-    viewModelOf(::CheckoutViewModel)
+    viewModel { CheckoutViewModel(get(), get(), get(), get(), get()) }
     viewModelOf(::PaymentViewModel)
 }
 

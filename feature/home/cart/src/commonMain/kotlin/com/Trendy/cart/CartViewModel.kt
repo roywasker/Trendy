@@ -36,9 +36,9 @@ class CartViewModel(
                 val cart = customerState.getSuccessData().cart
                 val products = productsState.getSuccessData()
 
-                val result = cart.mapNotNull { cartItem ->
+                val result = cart.map { cartItem ->
                     val product = products.find { it.id == cartItem.productId }
-                    product?.let { cartItem to it }
+                    cartItem to (product ?: com.trendy.shared.domain.unavailableProduct(cartItem.productId))
                 }
 
                 RequestState.Success(result)

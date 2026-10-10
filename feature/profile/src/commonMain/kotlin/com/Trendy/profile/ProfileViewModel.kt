@@ -20,6 +20,8 @@ data class ProfileScreenState(
     val email: String = "",
     val city: String? = null,
     val postalCode: Int? = null,
+    val postalCodeText: String = "",
+    val shippingState: String = "",
     val address: String? = null,
     val country: Country = Country.Israel,
     val phoneNumber: PhoneNumber? = null
@@ -38,7 +40,7 @@ class ProfileViewModel(
             firstName.length in 3..50 &&
             lastName.length in 3..50 &&
             city?.length  in 3..50 &&
-            postalCode != null || postalCode.toString().length in 3..8 &&
+            (Regex("[0-9]{3,8}").matches(postalCodeText) || (country == Country.Usa && com.trendy.shared.domain.validPostalCode(country, postalCodeText))) && com.trendy.shared.domain.validShippingState(country, shippingState) &&
             address?.length  in 3..50 &&
             phoneNumber?.number?.length  in 5..50
         }
@@ -54,9 +56,11 @@ class ProfileViewModel(
                             email = fetchedCustomer.email,
                             city = fetchedCustomer.city,
                             postalCode = fetchedCustomer.postalCode,
+                            postalCodeText = fetchedCustomer.postalCodeText ?: fetchedCustomer.postalCode?.toString().orEmpty(),
+                            shippingState = fetchedCustomer.shippingState,
                             address = fetchedCustomer.address,
                             phoneNumber = fetchedCustomer.phoneNumber,
-                            country = Country.entries.firstOrNull { it.dialCode == fetchedCustomer.phoneNumber?.dialCode }
+                            country = Country.entries.firstOrNull { it.code == fetchedCustomer.countryCode || (fetchedCustomer.countryCode == null && it.dialCode == fetchedCustomer.phoneNumber?.dialCode) }
                                 ?: Country.Israel
                     )
                     screenReady = RequestState.Success(Unit)
@@ -80,8 +84,12 @@ class ProfileViewModel(
     }
 
     fun updatePostalCode(value: Int?) {
-        screenState = screenState.copy(postalCode = value)
+        screenState = screenState.copy(postalCode = value, postalCodeText = value?.toString().orEmpty())
     }
+
+    fun updatePostalCodeText(value: String) { screenState = screenState.copy(postalCodeText = value, postalCode = value.toIntOrNull()) }
+
+    fun updateShippingState(value: String) { screenState = screenState.copy(shippingState = value.trim().uppercase()) }
 
     fun updateAddress(value: String) {
         screenState = screenState.copy(address = value)
@@ -90,6 +98,7 @@ class ProfileViewModel(
     fun updateCountry(value: Country) {
         screenState = screenState.copy(
             country = value,
+            shippingState = if (screenState.country == value) screenState.shippingState else "",
             phoneNumber = screenState.phoneNumber?.copy(
                 dialCode = value.dialCode
             )
@@ -118,6 +127,9 @@ class ProfileViewModel(
                     email = screenState.email,
                     city = screenState.city,
                     postalCode = screenState.postalCode,
+                    postalCodeText = screenState.postalCodeText,
+                    countryCode = screenState.country.code,
+                    shippingState = screenState.shippingState,
                     address = screenState.address,
                     phoneNumber = screenState.phoneNumber
                 ),

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.Trendy.data.domain.CustomerRepository
 import com.Trendy.data.domain.ProductRepository
 import com.trendy.shared.util.RequestState
+import com.trendy.shared.util.toCents
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.IO
@@ -47,9 +48,9 @@ class HomeGraphViewModel(
                 val cart = customerState.getSuccessData().cart
                 val products = productsState.getSuccessData()
 
-                val result = cart.mapNotNull { cartItem ->
+                val result = cart.map { cartItem ->
                     val product = products.find { it.id == cartItem.productId }
-                    product?.let { cartItem to it }
+                    cartItem to (product ?: com.trendy.shared.domain.unavailableProduct(cartItem.productId))
                 }
 
                 RequestState.Success(result)
@@ -67,14 +68,16 @@ class HomeGraphViewModel(
 
         if (data.isSuccess()) {
             val items = data.getSuccessData()
+            if (items.any { !it.second.isAvailable }) return@flatMapLatest flowOf(RequestState.Error("Remove unavailable products from your cart before checkout."))
             val cartItems = items.map { it.first }
             val products = items.map { it.second }.associateBy { it.id }
 
+            if (items.any { !it.second.price.isFinite() || it.second.price <= 0 }) return@flatMapLatest flowOf(RequestState.Error("A product has an invalid price."))
             val totalPrice = cartItems.sumOf { cartItem ->
                 val productPrice = products[cartItem.productId]?.price ?: 0.0
-                productPrice * cartItem.quantity
+                productPrice.toCents() * cartItem.quantity
             }
-            flowOf(RequestState.Success(totalPrice))
+            flowOf(RequestState.Success(totalPrice / 100.0))
         }else if (data.isError()) {
             flowOf(RequestState.Error(data.getErrorMessage()))
         }else{

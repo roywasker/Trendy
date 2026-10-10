@@ -7,6 +7,7 @@ import com.trendy.shared.CategoryRed
 import com.trendy.shared.CategoryPurple
 import com.trendy.shared.CategoryGreen
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
@@ -23,7 +24,8 @@ data class Product(
     val price: Double,
     val isPopular: Boolean = false,
     val isDiscounted: Boolean = false,
-    val isNew: Boolean = false
+    val isNew: Boolean = false,
+    @Transient val isAvailable: Boolean = true,
 )
 
 enum class ProductCategory (
@@ -49,5 +51,11 @@ enum class ProductCategory (
     DIY(
         title = "DIY",
         categoryColor = CategoryRed
-    )
+    );
+
+    companion object {
+        /** Converts persisted category values without allowing malformed remote data to crash the UI. */
+        fun fromStoredName(value: String?): ProductCategory? =
+            entries.firstOrNull { it.name == value }
+    }
 }

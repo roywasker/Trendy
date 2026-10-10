@@ -10,14 +10,25 @@ import dev.gitlive.firebase.firestore.firestore
 import dev.gitlive.firebase.storage.File
 import dev.gitlive.firebase.storage.storage
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.withTimeout
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-class AdminRepositoryImpl: AdminRepository {
-    override fun getCurrentUserId() = Firebase.auth.currentUser?.uid
+class AdminRepositoryImpl(
+    private val userId: () -> String? = { Firebase.auth.currentUser?.uid },
+    private val productSnapshots: () -> Flow<List<Product>> = {
+        Firebase.firestore.collection("product").snapshots.map { snapshot ->
+            snapshot.documents.map { it.data<Product>().copy(id=it.id) }
+        }
+    },
+): AdminRepository {
+    override fun getCurrentUserId() = userId()
 
     override suspend fun createNewProduct(
         product: Product,
@@ -248,46 +259,12 @@ class AdminRepositoryImpl: AdminRepository {
             .replace("%20", " ")
     }
 
-    override fun searchProductsByTitle(searchQuery: String): Flow<RequestState<List<Product>>> =
-        channelFlow {
-            try {
-                val userId = getCurrentUserId()
-                if (userId != null) {
-                    val database = Firebase.firestore
-
-                    database.collection(collectionPath = "product")
-                        .snapshots
-                        .collectLatest { query ->
-                            val products = query.documents.map { document ->
-
-                                Product(
-                                    id = document.id,
-                                    title = document.get(field = "title"),
-                                    createdAt = document.get(field = "createdAt"),
-                                    description = document.get(field = "description"),
-                                    thumbnail = document.get(field = "thumbnail"),
-                                    category = document.get(field = "category"),
-                                    weight = document.get(field = "weight"),
-                                    price = document.get(field = "price"),
-                                    isPopular = document.get(field = "isPopular"),
-                                    isDiscounted = document.get(field = "isDiscounted"),
-                                    isNew = document.get(field = "isNew")
-                                )
-                            }
-                            send(
-                                RequestState.Success(
-                                    products
-                                        .filter { it.title.contains(searchQuery) }
-                                        .map { it.copy(title = it.title.uppercase()) }
-                                )
-                            )
-                        }
-                } else {
-                    send(RequestState.Error("User is not available."))
-                }
-            } catch (e: Exception) {
-                send(RequestState.Error("Error while searching products: ${e.message}"))
-            }
-        }
+    override fun searchProductsByTitle(searchQuery: String): Flow<RequestState<List<Product>>> = flow {
+        if (getCurrentUserId() == null) emit(RequestState.Error("User is not available."))
+        else emitAll(productSnapshots().map { products ->
+            RequestState.Success(products.filter { matchesProductTitle(it.title, searchQuery) }.map { it.copy(title=it.title.uppercase()) })
+        })
+    }.catch { emit(RequestState.Error("Error while searching products: " + it.message)) }
 
 }
+fun matchesProductTitle(title: String, query: String): Boolean = title.contains(query.trim(), ignoreCase = true)

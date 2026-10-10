@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
@@ -21,9 +22,8 @@ class CategorySearchViewModel(
     private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     private val products = productRepository.readProductsByCategoryFlow(
-        category = ProductCategory.valueOf(
-            savedStateHandle.get<String>("category") ?: ProductCategory.Gadgets.name
-        )
+        category = ProductCategory.fromStoredName(savedStateHandle.get<String>("category"))
+            ?: ProductCategory.Gadgets
     ).stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
@@ -38,22 +38,12 @@ class CategorySearchViewModel(
     }
 
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
-    val filteredProducts = searchQuery
-        .debounce(500)
-        .flatMapLatest { query ->
-            if (query.isBlank()) products
-            else {
-                if (products.value.isSuccess()) {
-                    flowOf(
-                        RequestState.Success(
-                            products.value.getSuccessData()
-                                .filter {
-                                    it.title.lowercase().contains(query.lowercase())
-                                }
-                        )
-                    )
-                } else products
-            }
+    val filteredProducts = combine(products, searchQuery.debounce(500)) { state, query ->
+        if (state.isSuccess()) {
+            RequestState.Success(state.getSuccessData().filter {
+                query.isBlank() || it.title.contains(query, ignoreCase = true)
+            })
+        } else state
         }
         .stateIn(
             scope = viewModelScope,

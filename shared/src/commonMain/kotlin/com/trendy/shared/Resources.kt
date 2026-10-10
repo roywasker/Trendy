@@ -69,10 +69,10 @@ object Resources {
     }
 
     object Auth{
-        const val primaryText = "Sigh in with google"
+        const val primaryText = "Sign in with Google"
         const val secondaryText = "Please wait..."
         const val appName = "TRENDY"
-        const val sighInText = "Sigh in to continue"
+        const val sighInText = "Sign in to continue"
     }
 
     object Flag {

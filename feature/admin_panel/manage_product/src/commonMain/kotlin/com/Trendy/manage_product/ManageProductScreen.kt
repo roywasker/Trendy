@@ -40,6 +40,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -86,9 +88,12 @@ fun ManageProductScreen(
     val messageBarState = rememberMessageBarState()
     val isFormValid = viewModel.isFormValid
     val uploadImageState = viewModel.uploadImageState
+    val productLoadState = viewModel.productLoadState
     var showCategoryDialog by remember { mutableStateOf(false) }
     val screenState = viewModel.screenState
-    val photoPicker = koinInject<PhotoPicker>()
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val photoPicker = koinInject<ImagePicker>()
     var dropdownMenuOpened by remember { mutableStateOf(false) }
 
     photoPicker.InitializePhotoPicker(
@@ -194,7 +199,13 @@ fun ManageProductScreen(
             messageBarState = messageBarState,
             errorMaxLines = 2
         ){
-            Column(
+            if (id != null && !productLoadState.isSuccess()) {
+                productLoadState.DisplayResult(
+                    onLoading = { LoadingCard(modifier = Modifier.fillMaxSize()) },
+                    onError = { ErrorCard(message = it) },
+                    onSuccess = {}
+                )
+            } else Column(
                 modifier = Modifier
                     .padding(
                         horizontal = 24.dp
@@ -455,9 +466,10 @@ fun ManageProductScreen(
                 PrimaryButton(
                     text = if (id == null) "Add new product" else "Update",
                     icon = if (id == null) Resources.Icons.Plus else Resources.Icons.Checkmark,
-                    enable = isFormValid,
+                    enable = isFormValid && productLoadState.isSuccess(),
                     onClick = {
-
+                        focusManager.clearFocus()
+                        keyboardController?.hide()
                         if(id != null){
                             viewModel.updateProduct(
                                 onSuccess = {

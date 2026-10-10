@@ -122,17 +122,22 @@ fun CheckoutScreen(
                     city = screenState.city,
                     onCityChange = viewModel::updateCity,
                     postalCode = screenState.postalCode,
+                                postalCodeText = screenState.postalCodeText,
+                                onPostalCodeTextChange = viewModel::updatePostalCodeText,
+                                shippingState = screenState.shippingState,
+                                onShippingStateChange = viewModel::updateShippingState,
                     onPostalCodeChange = viewModel::updatePostalCode,
                     address = screenState.address,
                     onAddressChange = viewModel::updateAddress,
                     phoneNumber = screenState.phoneNumber?.number,
-                    onPhoneNumberChange = viewModel::updatePhoneNumber
+                    onPhoneNumberChange = viewModel::updatePhoneNumber,
+                    phoneMaximum = 30,
                 )
                 Column {
                     PrimaryButton(
                         text = "Pay with PayPal",
                         icon = Resources.Images.PaypalLogo,
-                        enable = isFormValid,
+                        enable = isFormValid && !viewModel.isSubmitting,
                         onClick = {
                             viewModel.payWithPayPal(
                                 onSuccess = {
@@ -149,7 +154,7 @@ fun CheckoutScreen(
                         text = "Pay on Delivery",
                         icon = Resources.Icons.ShoppingCart,
                         secondary = true,
-                        enable = isFormValid,
+                        enable = isFormValid && !viewModel.isSubmitting,
                         onClick = {
                             viewModel.payOnDelivery(
                                 onSuccess = {

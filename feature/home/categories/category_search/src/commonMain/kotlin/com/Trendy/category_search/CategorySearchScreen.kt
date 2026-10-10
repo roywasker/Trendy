@@ -26,6 +26,7 @@ import androidx.compose.runtime.collectAsState
 import org.koin.compose.viewmodel.koinViewModel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -54,7 +55,7 @@ fun CategorySearchScreen(
     val viewModel = koinViewModel<CategorySearchViewModel>()
     val filteredProducts by viewModel.filteredProducts.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
-    var searchBarVisible by mutableStateOf(false)
+    var searchBarVisible by remember { mutableStateOf(false) }
 
     Scaffold(
         containerColor = Surface,

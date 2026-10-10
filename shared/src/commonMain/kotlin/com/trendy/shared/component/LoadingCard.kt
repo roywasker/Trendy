@@ -6,6 +6,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.trendy.shared.IconPrimary
 
@@ -14,7 +15,7 @@ fun LoadingCard(
     modifier: Modifier = Modifier
 ){
     Box(
-        modifier = modifier,
+        modifier = modifier.testTag("loading"),
         contentAlignment = Alignment.Center
     ){
         CircularProgressIndicator(
